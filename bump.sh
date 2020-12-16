@@ -29,43 +29,41 @@ bump() {
       echo "refusing to tag; $latest_ver already tagged for HEAD ($head_commit)"
   else
       echo "tagging $next_ver $head_commit"
-      git tag "$next_ver" $head_commit
+      git tag "$next_ver" "$head_commit"
   fi
 
   # git push
-  if [[ ${PUSH} == 'true' ]]; then
-    $(which git) push origin ${next_ver}
+  if [[ ${PUSH} != 'false' ]]; then
+    $(which git) push origin "${next_ver}"
   fi
 }
 
 usage() {
-  echo "Usage: bump [-p prefix] [--nopush] {major|minor|patch} | -l"
+  echo "Usage: bump [-p prefix] [-P] {major|minor|patch} | -l"
   echo "Bumps the semantic version field by one for a git-project."
   echo
   echo "Options:"
-  echo "  -l        list the latest tagged version instead of bumping."
-  echo "  -p        prefix [to be] used for the semver tags. default prefix: v"
-  echo "  --nopush  disable auto pushing new tag to git repository."
+  echo "  -l  list the latest tagged version instead of bumping."
+  echo "  -p  prefix [to be] used for the semver tags. default prefix: v"
+  echo "  -P  disable auto pushing new tag to git repository."
   exit 1
 }
 
-while getopts :p:l opt; do
+while getopts :p:l:P opt; do
   case $opt in
     p) PREFIX="$OPTARG";;
     l) LIST=1;;
-    nopush) PUSH=false;;
+    P) PUSH=false;;
     \?) usage;;
     :) echo "option -$OPTARG requires an argument"; exit 1;;
   esac
 done
 # set default PREFIX
 if [[ ${PREFIX} == '' ]]; then PREFIX=v; fi
-# set default PUSH
-if [[ ${PUSH} == '' ]]; then PUSH=true; fi
 
 shift $((OPTIND-1))
 
-if [ ! -z "$LIST" ];then
+if [ -n "$LIST" ];then
   find_latest_semver
   exit 0
 fi
