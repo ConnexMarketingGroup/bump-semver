@@ -25,11 +25,11 @@ Options:
 ### bumping
 Given a git project with the highest semantic version tag being `0.0.0`, or where no semantic version exists at all, the following three invocations will yield a new tag with the specified version number:
 
-* `bump.sh major` -> 1.0.0
-* `bump.sh minor` -> 0.1.0
-* `bump.sh patch` -> 0.0.1
+* `bump.sh major` -> v1.0.0
+* `bump.sh minor` -> v0.1.0
+* `bump.sh patch` -> v0.0.1
 
-For a project that uses a _v_-prefix, the optional _prefix_ option can be used.
+For a project that uses a _v_-prefix, the optional _prefix_ option can be used. Default prefix is `v`.
 
 `bump.sh -p v minor` -> v0.1.0
 
