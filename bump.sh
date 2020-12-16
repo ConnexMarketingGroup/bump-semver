@@ -6,7 +6,7 @@
 find_latest_semver() {
   pattern="^$PREFIX([0-9]+\.[0-9]+\.[0-9]+)\$"
   versions=$(for tag in $(git tag); do
-    [[ "$tag" =~ $pattern ]] && echo "${BASH_REMATCH[1]}"
+    [[ "$tag" =~ $pattern ]] && echo "${PREFIX}${BASH_REMATCH[1]}"
   done)
   if [ -z "$versions" ];then
     echo 0.0.0
@@ -22,6 +22,7 @@ increment_ver() {
 
 bump() {
   next_ver="${PREFIX}$(increment_ver "$1" "$2" "$3")"
+  exit
   latest_ver="${PREFIX}$(find_latest_semver)"
   latest_commit=$(git rev-parse "${latest_ver}" 2>/dev/null )
   head_commit=$(git rev-parse HEAD)
@@ -31,15 +32,21 @@ bump() {
       echo "tagging $next_ver $head_commit"
       git tag "$next_ver" $head_commit
   fi
+
+  # git push
+  if [[ ${PUSH} == 'true' ]]; then
+    $(which git) push origin ${next_ver}
+  fi
 }
 
 usage() {
-  echo "Usage: bump [-p prefix] {major|minor|patch} | -l"
+  echo "Usage: bump [-p prefix] [--nopush] {major|minor|patch} | -l"
   echo "Bumps the semantic version field by one for a git-project."
   echo
   echo "Options:"
-  echo "  -l  list the latest tagged version instead of bumping."
-  echo "  -p  prefix [to be] used for the semver tags."
+  echo "  -l        list the latest tagged version instead of bumping."
+  echo "  -p        prefix [to be] used for the semver tags. default prefix: v"
+  echo "  --nopush  disable auto pushing new tag to git repository."
   exit 1
 }
 
@@ -47,10 +54,16 @@ while getopts :p:l opt; do
   case $opt in
     p) PREFIX="$OPTARG";;
     l) LIST=1;;
+    nopush) PUSH=false;;
     \?) usage;;
     :) echo "option -$OPTARG requires an argument"; exit 1;;
   esac
 done
+# set default PREFIX
+if [[ ${PREFIX} == '' ]]; then PREFIX=v; fi
+# set default PUSH
+if [[ ${PUSH} == '' ]]; then PUSH=true; fi
+
 shift $((OPTIND-1))
 
 if [ ! -z "$LIST" ];then
@@ -59,8 +72,10 @@ if [ ! -z "$LIST" ];then
 fi
 
 case $1 in
-  major) bump 1 0 0;;
-  minor) bump 0 1 0;;
-  patch) bump 0 0 1;;
+  major) bump -v ${PREFIX} 1 0 0;;
+  minor) bump -v ${PREFIX} 0 1 0;;
+  patch) bump -v ${PREFIX} 0 0 1;;
   *) usage
 esac
+
+

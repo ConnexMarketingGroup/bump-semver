@@ -5,6 +5,12 @@ It looks for semantic version tags in the current git project and tags HEAD with
 
 If HEAD is already tagged with a semantic version, the script will cowardly refuse to tag and let you know what version is already tagged for the HEAD commit.
 
+## Install
+Just clone the repo and add [bump.sh](bump.sh) to $PATH, e.g.
+```
+ln -s $(pwd)/bump.sh /usr/local/bin/bump
+```
+
 ## Usage
 ```
 Usage: bump [-p prefix] {major|minor|patch} | -l
