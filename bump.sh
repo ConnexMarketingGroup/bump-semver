@@ -6,7 +6,7 @@
 find_latest_semver() {
   pattern="^$PREFIX([0-9]+\.[0-9]+\.[0-9]+)\$"
   versions=$(for tag in $(git tag); do
-    [[ "$tag" =~ $pattern ]] && echo "${PREFIX}${BASH_REMATCH[1]}"
+    [[ "$tag" =~ $pattern ]] && echo "${BASH_REMATCH[1]}"
   done)
   if [ -z "$versions" ];then
     echo 0.0.0
@@ -34,32 +34,33 @@ bump() {
 
   # git push
   if [[ ${PUSH} != 'false' ]]; then
-    $(which git) push origin "${next_ver}"
+    git push origin "${next_ver}"
   fi
 }
 
 usage() {
-  echo "Usage: bump [-p prefix] [-P] {major|minor|patch} | -l"
+  echo "Usage: bump [-p prefix] {major|minor|patch} | -l"
   echo "Bumps the semantic version field by one for a git-project."
   echo
   echo "Options:"
   echo "  -l  list the latest tagged version instead of bumping."
-  echo "  -p  prefix [to be] used for the semver tags. default prefix: v"
-  echo "  -P  disable auto pushing new tag to git repository."
+  echo "  -p  prefix [to be] used for the semver tags. default prefix: v"
+  echo "  -n  disable auto pushing new tag to git repository."
   exit 1
 }
 
-while getopts :p:l:P opt; do
+while getopts p:ln opt; do
   case $opt in
     p) PREFIX="$OPTARG";;
     l) LIST=1;;
-    P) PUSH=false;;
+    n) PUSH=false;;
     \?) usage;;
     :) echo "option -$OPTARG requires an argument"; exit 1;;
   esac
 done
+
 # set default PREFIX
-if [[ ${PREFIX} == '' ]]; then PREFIX=v; fi
+if [[ ${PREFIX} == '' ]]; then PREFIX="v"; fi
 
 shift $((OPTIND-1))
 
@@ -69,10 +70,8 @@ if [ -n "$LIST" ];then
 fi
 
 case $1 in
-  major) bump -v ${PREFIX} 1 0 0;;
-  minor) bump -v ${PREFIX} 0 1 0;;
-  patch) bump -v ${PREFIX} 0 0 1;;
-  *) usage
+  major) bump 1 0 0;;
+  minor) bump 0 1 0;;
+  patch) bump 0 0 1;;
+  *) usage;;
 esac
-
-
