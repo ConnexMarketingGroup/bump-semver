@@ -22,7 +22,6 @@ increment_ver() {
 
 bump() {
   next_ver="${PREFIX}$(increment_ver "$1" "$2" "$3")"
-  exit
   latest_ver="${PREFIX}$(find_latest_semver)"
   latest_commit=$(git rev-parse "${latest_ver}" 2>/dev/null )
   head_commit=$(git rev-parse HEAD)
