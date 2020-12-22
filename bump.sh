@@ -16,12 +16,17 @@ find_latest_semver() {
 }
 
 increment_ver() {
-  find_latest_semver | awk -F. -v a="$1" -v b="$2" -v c="$3" \
-      '{printf("%d.%d.%d", $1+a, $2+b , $3+c)}'
+  if [[ $4 == 'major' ]]; then
+    find_latest_semver | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, 0 , 0)}'
+  elif [[ $4 == 'minor' ]]; then
+    find_latest_semver | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , 0)}'
+  elif [[ $4 == 'patch' ]]; then
+    find_latest_semver | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+c)}'
+  fi
 }
 
 bump() {
-  next_ver="${PREFIX}$(increment_ver "$1" "$2" "$3")"
+  next_ver="${PREFIX}$(increment_ver "$1" "$2" "$3" "$4")"
   latest_ver="${PREFIX}$(find_latest_semver)"
   latest_commit=$(git rev-parse "${latest_ver}" 2>/dev/null )
   head_commit=$(git rev-parse HEAD)
@@ -70,8 +75,8 @@ if [ -n "$LIST" ];then
 fi
 
 case $1 in
-  major) bump 1 0 0;;
-  minor) bump 0 1 0;;
-  patch) bump 0 0 1;;
+  major) bump 1 0 0 major;;
+  minor) bump 0 1 0 minor;;
+  patch) bump 0 0 1 patch;;
   *) usage;;
 esac
